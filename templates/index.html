@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VisaTime AI — H‑1B Processing Predictor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <span class="nav-globe">🌍</span>
+        <span class="nav-name">VisaTime <em>AI</em></span>
+      </div>
+      <div class="nav-badge">H‑1B Prediction Engine</div>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="container">
+      <div class="hero-tag">✦ AI-Powered Intelligence</div>
+      <h1 class="hero-title">
+        Predict Your<br/>
+        <span>H‑1B Processing</span><br/>
+        Timeline
+      </h1>
+      <p class="hero-sub">
+        Machine learning trained on thousands of real H‑1B cases — 
+        get a precise estimate of your visa processing window in seconds.
+      </p>
+      <div class="stat-row">
+        <div class="stat-item">
+          <div class="stat-num">{{ total_records }}</div>
+          <div class="stat-label">Records Trained</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-num">{{ states_covered }}</div>
+          <div class="stat-label">States Covered</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-num">~{{ avg_days }}d</div>
+          <div class="stat-label">Avg. Processing</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="main">
+    <div class="container">
+
+      <!-- ── FORM SECTION ── -->
+      <div class="section-header">
+        <span class="step-pill">Step 01</span>
+        <h2 class="section-title">Application Details</h2>
+      </div>
+
+      <div class="form-grid">
+
+        <!-- Card 1 -->
+        <div class="form-card">
+          <div class="form-card-head">
+            <span class="form-card-icon">🗺</span>
+            <span class="form-card-label">Location & Role</span>
+          </div>
+          <div class="field">
+            <label for="state">State</label>
+            <div class="select-wrap">
+              <select id="state">
+                {% for s in states %}
+                <option value="{{ s }}">{{ s }}</option>
+                {% endfor %}
+              </select>
+              <span class="select-arrow">↓</span>
+            </div>
+          </div>
+          <div class="field">
+            <label for="occupation">Occupation (SOC)</label>
+            <div class="select-wrap">
+              <select id="occupation">
+                {% for o in occupations %}
+                <option value="{{ o }}">{{ o }}</option>
+                {% endfor %}
+              </select>
+              <span class="select-arrow">↓</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="form-card">
+          <div class="form-card-head">
+            <span class="form-card-icon">💼</span>
+            <span class="form-card-label">Compensation & Timeline</span>
+          </div>
+          <div class="field">
+            <label for="wage">Annual Prevailing Wage ($)</label>
+            <div class="input-wrap">
+              <span class="input-prefix">$</span>
+              <input type="number" id="wage" value="75000" min="1000" step="1000"/>
+            </div>
+          </div>
+          <div class="field">
+            <label for="app-date">Application Submission Date</label>
+            <input type="date" id="app-date"/>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── PREDICT BUTTON ── -->
+      <div class="btn-row">
+        <button class="btn-predict" id="predict-btn" onclick="predict()">
+          <span class="btn-arrow">⟶</span>
+          Estimate Processing Time
+        </button>
+      </div>
+
+      <!-- ── RESULT SECTION ── -->
+      <div class="result-section" id="result-section">
+
+        <div class="divider"><span>Prediction Result</span></div>
+
+        <div class="result-grid">
+          <div class="result-card">
+            <div class="result-label">Estimated Days</div>
+            <div class="result-value" id="r-days">—</div>
+            <div class="result-sub">calendar days</div>
+          </div>
+          <div class="result-card">
+            <div class="result-label">In Weeks</div>
+            <div class="result-value" id="r-weeks">—</div>
+            <div class="result-sub">approximate duration</div>
+          </div>
+          <div class="result-card">
+            <div class="result-label">Expected Completion</div>
+            <div class="result-value result-value--sm" id="r-date">—</div>
+            <div class="result-sub" id="r-year">—</div>
+          </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="progress-card">
+          <div class="progress-head">
+            <span class="progress-label">Processing Progress Estimate</span>
+            <span class="progress-pct" id="r-pct">—</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="r-bar" style="width:0%"></div>
+          </div>
+          <div class="progress-foot">
+            <span id="r-start">—</span>
+            <span id="r-meta">—</span>
+            <span id="r-end" class="progress-end">—</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── ERROR ── -->
+      <div class="error-box" id="error-box"></div>
+
+      <!-- ── INSIGHTS ── -->
+      <div class="divider" style="margin-top:3rem"><span>Data Insights</span></div>
+      <div class="section-header">
+        <span class="step-pill">Step 02</span>
+        <h2 class="section-title">Historical Trends</h2>
+      </div>
+
+      <div class="insights-grid">
+        <div class="insight-card">
+          <div class="insight-title">⟡ Processing Time Distribution</div>
+          <canvas id="chart-dist" height="180"></canvas>
+        </div>
+        <div class="insight-card">
+          <div class="insight-title">⟡ Top States by Volume</div>
+          <canvas id="chart-states" height="180"></canvas>
+        </div>
+        <div class="insight-card">
+          <div class="insight-title">⟡ Avg. Time by Wage Band</div>
+          <canvas id="chart-wage" height="180"></canvas>
+        </div>
+      </div>
+
+      <!-- Quick facts -->
+      <div class="facts-card">
+        <div class="facts-icon">💡</div>
+        <div>
+          <div class="facts-title">Quick Facts</div>
+          <p class="facts-body">
+            Higher wages generally correlate with faster processing — premium positions at large sponsors
+            often benefit from expedited handling. Geographic concentration in California, New York,
+            and Texas reflects the tech-industry demand for H‑1B talent.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <span>🌍 VisaTime AI</span>
+        <span>Crafted by <strong>Dev Agarwal</strong></span>
+        <span>Powered by Scikit-Learn & Flask</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ── Chart.js ── -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
