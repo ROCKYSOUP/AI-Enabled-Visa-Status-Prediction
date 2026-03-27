@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 import os
 
 app = Flask(__name__)
-
 # ── Load model & data ──
 model_path = os.path.join("models", "visa_model.pkl")
 data_path  = os.path.join("data", "visa_cleaned.csv")
