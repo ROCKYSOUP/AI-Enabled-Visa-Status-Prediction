@@ -6,9 +6,9 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 
 # ── Load model & data ──
-model = joblib.load(r"C:\Users\agarw\OneDrive\Desktop\Infosys\models\visa_model.pkl")
+model = joblib.load(r"models\visa_model.pkl")
 model_columns = model.feature_names_in_
-df = pd.read_csv(r"C:\Users\agarw\OneDrive\Desktop\Infosys\data\visa_cleaned.csv")
+df = pd.read_csv(r"data\visa_cleaned.csv")
 
 STATE_LIST = sorted(df["State"].dropna().unique().tolist())
 SOC_LIST   = sorted(df["SOC_NAME"].dropna().unique().tolist())
@@ -85,4 +85,4 @@ def predict():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000)
